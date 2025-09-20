@@ -14,6 +14,8 @@ interface Product {
   cons: string[];
   score: number;
   isRecommended: boolean;
+  verdict?: string;
+  url?: string;
 }
 
 interface ResultsDisplayProps {
@@ -67,13 +69,13 @@ const ResultsDisplay = ({ results }: ResultsDisplayProps) => {
                     </div>
                   </div>
 
-                  <div className="mb-6">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">Overall Score</span>
-                      <span className="font-bold text-success">{recommendedProduct.score}/100</span>
+                  {/* Verdict Section */}
+                  {recommendedProduct.verdict && (
+                    <div className="mb-6 p-4 bg-success/10 border border-success/20 rounded-lg">
+                      <h5 className="font-medium text-success mb-2">AI Verdict</h5>
+                      <p className="text-sm text-muted-foreground">{recommendedProduct.verdict}</p>
                     </div>
-                    <Progress value={recommendedProduct.score} className="h-2" />
-                  </div>
+                  )}
 
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
@@ -116,7 +118,12 @@ const ResultsDisplay = ({ results }: ResultsDisplayProps) => {
                       className="max-w-full max-h-48 object-contain"
                     />
                   </div>
-                  <Button variant="success" size="lg" className="w-full">
+                  <Button 
+                    variant="success" 
+                    size="lg" 
+                    className="w-full"
+                    onClick={() => recommendedProduct.url && window.open(recommendedProduct.url, '_blank')}
+                  >
                     <ExternalLink className="w-4 h-4 mr-2" />
                     View on Amazon
                   </Button>
@@ -172,7 +179,12 @@ const ResultsDisplay = ({ results }: ResultsDisplayProps) => {
                         </div>
                       </div>
 
-                      <Button variant="outline" size="sm" className="w-full">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => product.url && window.open(product.url, '_blank')}
+                      >
                         <ExternalLink className="w-3 h-3 mr-2" />
                         View Product
                       </Button>
@@ -187,10 +199,16 @@ const ResultsDisplay = ({ results }: ResultsDisplayProps) => {
         {/* Analysis Summary */}
         <Card className="result-card mt-12 bg-gradient-to-r from-primary/5 to-accent/5 border-primary/20">
           <div className="text-center">
-            <h3 className="text-xl font-semibold mb-2">Analysis Summary</h3>
+            <h3 className="text-xl font-semibold mb-2">Analysis Complete</h3>
             <p className="text-muted-foreground">
-              Analyzed {results.products.length} products from Amazon search results. 
-              Our recommendation is based on price, features, reviews, and overall value.
+              {results.products.length > 0 ? (
+                <>
+                  Found and analyzed the perfect product match for your query. 
+                  Our AI has evaluated features, price, reviews, and overall value to bring you this recommendation.
+                </>
+              ) : (
+                "No suitable products found for your query. Try refining your search criteria."
+              )}
             </p>
           </div>
         </Card>

@@ -18,61 +18,56 @@ const Index = () => {
     setIsAnalyzing(true);
     
     try {
-      // This would connect to your Spring Boot backend
-      // Example: const response = await fetch('/api/analyze', { ... });
+      // Call your Spring Boot backend API
+      const response = await fetch('http://localhost:8080/product/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          input: input,
+          type: type
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const product = await response.json();
       
-      // Mock delay for demo
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Mock results for demonstration
-      const mockResults = {
+      // Transform single product response to match UI expectations
+      const results = {
         query: input,
         products: [
           {
             id: 1,
-            name: "Premium Wireless Headphones Pro",
-            price: "$199.99",
-            rating: 4.8,
-            image: "/placeholder.svg",
-            pros: ["Excellent sound quality", "Long battery life", "Comfortable fit"],
-            cons: ["Expensive", "Heavy for extended use"],
-            score: 92,
-            isRecommended: true
-          },
-          {
-            id: 2,
-            name: "Budget Wireless Earbuds",
-            price: "$49.99",
-            rating: 4.2,
-            image: "/placeholder.svg",
-            pros: ["Affordable", "Good battery", "Compact"],
-            cons: ["Average sound", "Plastic build"],
-            score: 78,
-            isRecommended: false
-          },
-          {
-            id: 3,
-            name: "Studio Quality Headphones",
-            price: "$299.99",
-            rating: 4.9,
-            image: "/placeholder.svg",
-            pros: ["Professional quality", "Detachable cable", "Excellent build"],
-            cons: ["Very expensive", "Not wireless"],
-            score: 89,
-            isRecommended: false
+            name: product.name,
+            price: product.price,
+            rating: product.rating || (product.rating !== undefined ? product.rating / 10 * 5 : 4.5), // Convert 0-10 scale to 0-5 if needed
+            image: "/placeholder.svg", // Backend doesn't provide images
+            pros: product.pros || [],
+            cons: product.cons || [],
+            score: product.rating || 85, // Use rating as score
+            isRecommended: (product.rating || 7) > 7, // Recommend if rating > 7
+            verdict: product.verdict,
+            url: product.url
           }
         ]
       };
       
-      setSearchResults(mockResults);
+      setSearchResults(results);
       toast({
         title: "Analysis Complete!",
         description: "Found and analyzed the best products for you.",
       });
     } catch (error) {
+      console.error('Analysis failed:', error);
       toast({
         title: "Analysis Failed",
-        description: "Please try again or check your connection.",
+        description: error instanceof Error 
+          ? `Error: ${error.message}. Make sure your Spring Boot backend is running on localhost:8080.`
+          : "Please try again or check your connection.",
         variant: "destructive",
       });
     } finally {
