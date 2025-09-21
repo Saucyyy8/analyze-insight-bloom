@@ -19,7 +19,7 @@ const Index = () => {
     
     try {
       // Call your Spring Boot backend API
-      const response = await fetch('http://localhost:8080/product/analyze', {
+      const response = await fetch('http://localhost:8081/product/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
